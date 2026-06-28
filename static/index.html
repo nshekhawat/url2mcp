@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>url2mcp</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0d0f12;
+  color: #c9d1d9;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+header {
+  border-bottom: 1px solid #1e2128;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #00d4a8;
+  letter-spacing: 0.5px;
+}
+
+header h1 span {
+  color: #484f58;
+  font-weight: 400;
+}
+
+.badge {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #8b949e;
+}
+
+.badge .dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #00d4a8;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.container {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 0;
+  height: calc(100vh - 57px);
+}
+
+.left-panel {
+  border-right: 1px solid #1e2128;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.right-panel {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.section-title {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #484f58;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 11px;
+  color: #8b949e;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input {
+  width: 100%;
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #c9d1d9;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus {
+  border-color: #00d4a8;
+}
+
+.form-group input::placeholder {
+  color: #484f58;
+}
+
+.btn {
+  background: #00d4a8;
+  color: #0d0f12;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+  width: 100%;
+}
+
+.btn:hover { background: #00bf98; }
+.btn:active { opacity: 0.8; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid #da3633;
+  color: #da3633;
+  padding: 4px 10px;
+  font-size: 11px;
+  width: auto;
+  border-radius: 4px;
+}
+
+.btn-danger:hover { background: #da3633; color: #fff; }
+
+.error-msg {
+  color: #da3633;
+  font-size: 12px;
+  margin-top: 8px;
+  display: none;
+}
+
+.error-msg.visible { display: block; }
+
+.resource-list {
+  margin-top: 20px;
+}
+
+.resource-card {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.resource-card:hover {
+  border-color: #30363d;
+  background: #1c2128;
+}
+
+.resource-card.active {
+  border-color: #00d4a8;
+}
+
+.resource-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.resource-name {
+  font-weight: 600;
+  color: #00d4a8;
+  font-size: 14px;
+}
+
+.resource-url {
+  font-size: 11px;
+  color: #484f58;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #484f58;
+}
+
+.empty-state .icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.empty-state p {
+  font-size: 13px;
+}
+
+.preview-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #00d4a8;
+  margin-bottom: 4px;
+}
+
+.preview-url {
+  font-size: 11px;
+  color: #484f58;
+  margin-bottom: 16px;
+  word-break: break-all;
+}
+
+.preview-section {
+  margin-bottom: 16px;
+}
+
+.preview-section h3 {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #484f58;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.preview-text {
+  background: #161b22;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 400px;
+  overflow-y: auto;
+  color: #c9d1d9;
+}
+
+.preview-links {
+  list-style: none;
+}
+
+.preview-links li {
+  padding: 4px 0;
+}
+
+.preview-links a {
+  color: #58a6ff;
+  text-decoration: none;
+  font-size: 12px;
+  word-break: break-all;
+}
+
+.preview-links a:hover {
+  text-decoration: underline;
+}
+
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #30363d;
+  border-top-color: #00d4a8;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .left-panel {
+    border-right: none;
+    border-bottom: 1px solid #1e2128;
+  }
+  .right-panel {
+    min-height: 300px;
+  }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>url2mcp <span>// URL to MCP Server</span></h1>
+  <div class="badge">
+    <span class="dot"></span>
+    MCP server running on :8081
+  </div>
+</header>
+
+<div class="container">
+  <div class="left-panel">
+    <div class="section-title">Register URL</div>
+
+    <div class="form-group">
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="e.g. hn" autocomplete="off">
+    </div>
+
+    <div class="form-group">
+      <label for="url">URL</label>
+      <input type="url" id="url" placeholder="https://news.ycombinator.com" autocomplete="off">
+    </div>
+
+    <button class="btn" id="registerBtn" onclick="register()">Register</button>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="resource-list" id="resourceList">
+      <div class="empty-state">
+        <div class="icon">&#x1F310;</div>
+        <p>No resources registered yet.<br>Add a URL above to get started.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="right-panel" id="previewPanel">
+    <div class="empty-state">
+      <div class="icon">&#x1F50D;</div>
+      <p>Select a resource to preview its content.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let resources = [];
+let activeName = null;
+
+async function register() {
+  const name = document.getElementById('name').value.trim();
+  const url = document.getElementById('url').value.trim();
+  const btn = document.getElementById('registerBtn');
+  const err = document.getElementById('errorMsg');
+
+  err.classList.remove('visible');
+  err.textContent = '';
+
+  if (!name || !url) {
+    err.textContent = 'Both name and URL are required.';
+    err.classList.add('visible');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Fetching...';
+
+  try {
+    const resp = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, url })
+    });
+
+    const data = await resp.json();
+
+    if (!resp.ok || data.error) {
+      err.textContent = data.error || 'Registration failed.';
+      err.classList.add('visible');
+      return;
+    }
+
+    document.getElementById('name').value = '';
+    document.getElementById('url').value = '';
+    await loadResources();
+  } catch (e) {
+    err.textContent = 'Network error: ' + e.message;
+    err.classList.add('visible');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Register';
+  }
+}
+
+async function loadResources() {
+  try {
+    const resp = await fetch('/api/resources');
+    resources = await resp.json();
+    renderResourceList();
+  } catch (e) {
+    console.error('Failed to load resources:', e);
+  }
+}
+
+function renderResourceList() {
+  const container = document.getElementById('resourceList');
+
+  if (resources.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">&#x1F310;</div>
+        <p>No resources registered yet.<br>Add a URL above to get started.</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = '<div class="section-title">Resources</div>';
+
+  for (const r of resources) {
+    const card = document.createElement('div');
+    card.className = 'resource-card' + (activeName === r.name ? ' active' : '');
+    card.innerHTML = `
+      <div class="resource-card-header">
+        <span class="resource-name">${escapeHtml(r.name)}</span>
+        <button class="btn-danger" onclick="event.stopPropagation(); removeResource('${escapeHtml(r.name)}')">Remove</button>
+      </div>
+      <div class="resource-url">${escapeHtml(r.url)}</div>
+    `;
+    card.addEventListener('click', () => selectResource(r.name));
+    container.appendChild(card);
+  }
+}
+
+async function removeResource(name) {
+  try {
+    const resp = await fetch('/api/resources/' + encodeURIComponent(name), { method: 'DELETE' });
+    if (resp.ok) {
+      if (activeName === name) {
+        activeName = null;
+        document.getElementById('previewPanel').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">&#x1F50D;</div>
+            <p>Select a resource to preview its content.</p>
+          </div>`;
+      }
+      await loadResources();
+    }
+  } catch (e) {
+    console.error('Failed to remove resource:', e);
+  }
+}
+
+async function selectResource(name) {
+  activeName = name;
+  renderResourceList();
+
+  const panel = document.getElementById('previewPanel');
+  panel.innerHTML = '<div class="empty-state"><span class="spinner"></span><p>Loading preview...</p></div>';
+
+  try {
+    const resp = await fetch('/api/resources/' + encodeURIComponent(name) + '/preview');
+    const data = await resp.json();
+
+    if (!resp.ok) {
+      panel.innerHTML = `<div class="empty-state"><p style="color:#da3633;">${escapeHtml(data.error || 'Failed to load preview')}</p></div>`;
+      return;
+    }
+
+    let linksHtml = '';
+    if (data.links && data.links.length > 0) {
+      linksHtml = '<ul class="preview-links">';
+      for (const link of data.links.slice(0, 50)) {
+        linksHtml += `<li><a href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(link)}</a></li>`;
+      }
+      if (data.links.length > 50) {
+        linksHtml += `<li style="color:#484f58;font-size:11px;">... and ${data.links.length - 50} more</li>`;
+      }
+      linksHtml += '</ul>';
+    } else {
+      linksHtml = '<p style="color:#484f58;font-size:12px;">No links found.</p>';
+    }
+
+    panel.innerHTML = `
+      <div class="preview-title">${escapeHtml(data.title || '(no title)')}</div>
+      <div class="preview-url">url2mcp://${escapeHtml(name)}</div>
+
+      <div class="preview-section">
+        <h3>Plain Text</h3>
+        <div class="preview-text">${escapeHtml(data.body_text || '(no content)')}</div>
+      </div>
+
+      <div class="preview-section">
+        <h3>Links (${data.links ? data.links.length : 0})</h3>
+        ${linksHtml}
+      </div>
+    `;
+  } catch (e) {
+    panel.innerHTML = `<div class="empty-state"><p style="color:#da3633;">Error: ${escapeHtml(e.message)}</p></div>`;
+  }
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+// Load resources on page load
+loadResources();
+</script>
+
+</body>
+</html>
